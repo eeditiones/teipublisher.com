@@ -6,6 +6,7 @@ services:
   iiif: false
   # Named entity recognition
   ner: true
+primary_domainname: tei-publisher.org
 # the domains to be served by the proxy. Each domain may map to a different app and root path
 # within the same eXist-db instance
 domains:
@@ -15,6 +16,7 @@ domains:
     # entire database and also set CONTEXT_PATH=auto below.
     root: ""
     # root: ""
+    allow_apps: true
     # the name the server should listen to
     hostname: tei-publisher.com
     # settings for the proxy cache. If enabled, requests to content in reading view will be cached
@@ -63,6 +65,7 @@ domains:
     # entire database and also set CONTEXT_PATH=auto below.
     root: ""
     # root: ""
+    allow_apps: true
     # the name the server should listen to
     hostname: teipublisher.com
     # settings for the proxy cache. If enabled, requests to content in reading view will be cached
@@ -87,6 +90,7 @@ domains:
     # entire database and also set CONTEXT_PATH=auto below.
     root: ""
     # root: ""
+    allow_apps: true
     # the name the server should listen to
     hostname: www.teipublisher.com
     # settings for the proxy cache. If enabled, requests to content in reading view will be cached
@@ -106,6 +110,8 @@ domains:
         - /eebo/api/document/.*/(pdf|epub|print|tex)$
       expires: 7d
 publisher:
+  # if an image is provided, the build context and apps will be ignored and the image will be used instead
+  # image: wolfgangmm/tei-publisher-home:latest
   build:
     # directory or repository URL containing the Dockerfile to build publisher from
     context: .

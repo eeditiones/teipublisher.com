@@ -12,21 +12,26 @@ server {
   ssl_certificate /etc/nginx/ssl/live/{{domain.hostname}}/fullchain.pem;
   ssl_certificate_key /etc/nginx/ssl/live/{{domain.hostname}}/privkey.pem;
 
-  location / {
-    # change upstream server placeholder 'docker-publisher' below to what you configured above for upstream
-    proxy_pass http://docker-publisher/exist/apps/tei-publisher-home$request_uri;
-    proxy_redirect /exist/apps/tei-publisher-home/ /;
-    proxy_set_header   Host $host;
-    proxy_set_header   X-Real-IP $remote_addr;
-    proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header   X-Forwarded-Host $server_name;
-    proxy_ssl_server_name on;
-    proxy_cookie_path /exist /;
-    client_max_body_size  512m;
+  location = /exist/apps/tei-publisher/documentation {
+    return 301 https://{{primary_domainname}}/browse.html?collection=doc;
+  }
+  location = /exist/apps/tei-publisher/documentation/create-app {
+    return 301 https://{{primary_domainname}}/doc/quickstart.xml;
+  }
+  location = /exist/apps/tei-publisher/documentation/installation {
+    return 301 https://{{primary_domainname}}/doc/installation.xml;
+  }
+  location = /exist/apps/tei-publisher-home/index.html {
+    return 301 https://{{primary_domainname}}/index.html;
   }
 
-  location /exist {
-    # change upstream server placeholder 'docker-publisher' below to what you configured above for upstream
+{% if domain.hostname != primary_domainname %}
+  location / {
+    return 301 https://{{primary_domainname}}$request_uri;
+  }
+{% else %}
+
+  location / {
     proxy_pass http://docker-publisher{{domain.root}}$request_uri;
     proxy_redirect http://$host{{domain.root}}/ /;
     proxy_set_header   Host $host;
@@ -38,8 +43,23 @@ server {
     client_max_body_size  512m;
   }
 
+{% if domain.allow_apps %}
+    location ~ ^/exist/apps/([^/]+) {
+        proxy_pass http://docker-publisher$request_uri;
+        proxy_redirect http://$host/exist/apps/$1/ /exist/apps/$1/;
+    proxy_set_header   Host $host;
+    proxy_set_header   X-Real-IP $remote_addr;
+    proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header   X-Forwarded-Host $server_name;
+    proxy_ssl_server_name on;
+    proxy_cookie_path /exist /;
+    client_max_body_size  512m;
+  }
+{% endif %}
+
 {% if domain.cache.enable %}
   location {{ "~*" if domain.root == "" else "^*" }} /api/parts/ {
+  # location {{ "~*" if domain.root == "" else "^~" }} /api/parts/ {
     proxy_pass http://docker-publisher{{domain.root}}$request_uri;
     proxy_redirect http://$host{{domain.root}}/ /;
     proxy_set_header   Host $host;
