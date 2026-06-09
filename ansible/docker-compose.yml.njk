@@ -1,5 +1,8 @@
 services:
   publisher:
+{% if publisher.image %}
+    image: {{ publisher.image }}
+{% else %}
     build:
       context: ${BUILD_CONTEXT:-.}
       # use one of the below instead if you want to build from an external git repository (needs a Dockerfile):
@@ -13,7 +16,8 @@ services:
         # Set to 'auto' if the app should be exposed under its full path (e.g. /exist/apps/tei-publisher)
         # use empty string if the app is mapped to the root of the server (see nginx config below)
         CONTEXT_PATH: ${CONTEXT_PATH:-}
-        PROXY_CACHING: {{ publisher.caching_support }}
+        PROXY_CACHING: true
+{% endif %}
     # comment in to automatically restart:
     restart: always
     volumes:
